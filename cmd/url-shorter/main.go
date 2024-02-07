@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"os"
 	"shorter-url/internal/config"
@@ -24,14 +26,18 @@ func main() {
 
 	storage, err := sqlite.New(cfg.StoragePATH)
 
+	_ = storage
+
 	if err != nil {
 		log.Error("failed to init storage", sl.Err(err))
 		os.Exit(1)
 	}
 
-	_ = storage
+	router := chi.NewRouter()
 
-	//TODO: init router
+	//middleware
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
 
 	//TODO: run server
 }
@@ -45,6 +51,7 @@ func setupLogger(env string) *slog.Logger {
 		)
 	case envDev:
 		log = slog.New(
+
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
 		)
 	case envProd:
